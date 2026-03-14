@@ -1,0 +1,13 @@
+# ── CREDENTIALS — never commit these ──
+.env                  # Main credentials file (VPN keys, tunnel tokens, etc.)
+immich.env            # Immich database passwords
+*.env                 # Catch any other .env files
+!*.env.example        # BUT do commit .env.example template files
+
+# ── OS FILES ──
+.DS_Store             # macOS folder metadata
+Thumbs.db             # Windows thumbnail cache
+
+# ── EDITOR FILES ──
+.vscode/              # VS Code workspace settings
+*.swp                 # Vim swap files

@@ -1,0 +1,442 @@
+version: "3.8"
+
+# ═══════════════════════════════════════════════════════════════
+# K10 MEDIA SERVER — DOCKER COMPOSE
+# User: rayyanbiram  PUID: 1000  PGID: 988
+# Timezone: Europe/London
+# All containers communicate over the 'medianet' bridge network
+# using container names as hostnames (e.g. http://sonarr:8989)
+# ═══════════════════════════════════════════════════════════════
+
+networks:
+  medianet:
+    driver: bridge   # isolated internal network — containers can reach each other by name
+
+services:
+
+  # ── PLEX ──────────────────────────────────────────────────────
+  # Media server — streams movies, TV, and music to your devices
+  # Uses network_mode: host so Plex can discover devices on your LAN
+  # Hardware transcoding via Intel Iris Xe GPU (/dev/dri)
+  # Port: 32400
+  # ──────────────────────────────────────────────────────────────
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    network_mode: host   # host networking required for Plex LAN discovery and direct play
+    environment:
+      - PUID=1000          # run as rayyanbiram (UID 1000)
+      - PGID=988           # run as rayyanbiram's group (GID 988)
+      - TZ=Europe/London
+      - VERSION=docker     # tells Plex to auto-update via Docker image
+    volumes:
+      - /home/rayyanbiram/docker/plex/config:/config   # Plex database, metadata, thumbnails
+      - /mnt/nas/data:/data                            # TRaSH: reads from /data/media/tv and /data/media/movies
+    devices:
+      - /dev/dri:/dev/dri   # pass GPU to container for Intel Quick Sync hardware transcoding
+    restart: unless-stopped
+
+  # ── SONARR ────────────────────────────────────────────────────
+  # TV show manager — monitors RSS feeds, grabs episodes automatically
+  # Sends downloads to SABnzbd (usenet) or qBittorrent (torrents)
+  # Then imports finished files into /data/media/tv
+  # Port: 8989
+  # ──────────────────────────────────────────────────────────────
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    networks: [medianet]
+    environment:
+      - PUID=1000
+      - PGID=988
+      - TZ=Europe/London
+    volumes:
+      - /home/rayyanbiram/docker/sonarr/config:/config
+      - /mnt/nas/data:/data   # TRaSH: single /data mount covers both library and downloads
+    ports:
+      - "8989:8989"
+    restart: unless-stopped
+
+  # ── SONARR (ANIME) ────────────────────────────────────────────
+  # Separate Sonarr instance for anime — uses different quality profiles
+  # and release group preferences vs standard TV
+  # Port: 8990 (maps internally to 8989 — same image, separate config)
+  # ──────────────────────────────────────────────────────────────
+  sonarr-anime:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr-anime
+    networks: [medianet]
+    environment:
+      - PUID=1000
+      - PGID=988
+      - TZ=Europe/London
+    volumes:
+      - /home/rayyanbiram/docker/sonarr-anime/config:/config
+      - /mnt/nas/data:/data   # root folder: /data/media/anime
+    ports:
+      - "8990:8989"   # external 8990 maps to internal 8989 (same port as Sonarr TV, different container)
+    restart: unless-stopped
+
+  # ── RADARR ────────────────────────────────────────────────────
+  # Movie manager — same concept as Sonarr but for movies
+  # Monitors for releases, grabs them, imports into /data/media/movies
+  # Port: 7878
+  # ──────────────────────────────────────────────────────────────
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    networks: [medianet]
+    environment:
+      - PUID=1000
+      - PGID=988
+      - TZ=Europe/London
+    volumes:
+      - /home/rayyanbiram/docker/radarr/config:/config
+      - /mnt/nas/data:/data   # TRaSH: /data/media/movies (library) + /data/usenet|torrents (downloads)
+    ports:
+      - "7878:7878"
+    restart: unless-stopped
+
+  # ── PROWLARR ──────────────────────────────────────────────────
+  # Indexer manager — connects to NZBGeek, NZBFinder, IPTorrents, 1337x
+  # Syncs indexers to Sonarr, Sonarr Anime, and Radarr automatically
+  # Port: 9696
+  # ──────────────────────────────────────────────────────────────
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    networks: [medianet]
+    environment:
+      - PUID=1000
+      - PGID=988
+      - TZ=Europe/London
+    volumes:
+      - /home/rayyanbiram/docker/prowlarr/config:/config
+    ports:
+      - "9696:9696"
+    restart: unless-stopped
+
+  # ── FLARESOLVERR ──────────────────────────────────────────────
+  # Cloudflare bypass proxy — Prowlarr uses this to scrape indexers
+  # protected by Cloudflare (e.g. 1337x)
+  # No port exposed — internal only, Prowlarr calls it directly
+  # ──────────────────────────────────────────────────────────────
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    networks: [medianet]
+    environment:
+      - TZ=Europe/London
+      - LOG_LEVEL=info
+    restart: unless-stopped
+
+  # ── BAZARR ────────────────────────────────────────────────────
+  # Subtitle downloader — monitors Sonarr and Radarr libraries
+  # automatically downloads subtitles for all your media
+  # Port: 6767
+  # ──────────────────────────────────────────────────────────────
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    networks: [medianet]
+    environment:
+      - PUID=1000
+      - PGID=988
+      - TZ=Europe/London
+    volumes:
+      - /home/rayyanbiram/docker/bazarr/config:/config
+      - /mnt/nas/data:/data   # needs access to /data/media/tv and /data/media/movies to write .srt files
+    ports:
+      - "6767:6767"
+    restart: unless-stopped
+
+  # ── SEERR ─────────────────────────────────────────────────────
+  # Request manager — friends browse and request movies/TV here
+  # Exposed publicly at https://seerr.biram.uk via Cloudflare Tunnel
+  # Port: 5055
+  # ──────────────────────────────────────────────────────────────
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    container_name: seerr
+    networks: [medianet]
+    environment:
+      - TZ=Europe/London
+      - LOG_LEVEL=debug
+    volumes:
+      - /home/rayyanbiram/docker/seerr/config:/app/config
+    ports:
+      - "5055:5055"
+    restart: unless-stopped
+
+  # ── SABNZBD ───────────────────────────────────────────────────
+  # Usenet downloader — downloads NZB files from Eweka and NZBFinder
+  # Downloads land in /data/usenet/incomplete then /data/usenet/complete
+  # Sonarr and Radarr watch the complete folder and import from there
+  # Port: 8080
+  # ──────────────────────────────────────────────────────────────
+  sabnzbd:
+    image: lscr.io/linuxserver/sabnzbd:latest
+    container_name: sabnzbd
+    networks: [medianet]
+    environment:
+      - PUID=1000
+      - PGID=988
+      - TZ=Europe/London
+    volumes:
+      - /home/rayyanbiram/docker/sabnzbd/config:/config
+      - /mnt/nas/data:/data   # TRaSH: incomplete → /data/usenet/incomplete, complete → /data/usenet/complete/
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  # ═══════════════════════════════════════════════════════════════
+  # GLUETUN + qBITTORRENT — VPN-tunnelled torrent downloading
+  #
+  # Gluetun is a VPN client container running ProtonVPN OpenVPN.
+  # qBittorrent uses network_mode: service:gluetun — this means
+  # ALL of qBittorrent's network traffic is forced through the
+  # Gluetun tunnel. If the VPN drops for any reason, qBittorrent
+  # immediately loses internet access (kill switch).
+  # No torrent traffic ever leaves unencrypted.
+  # ═══════════════════════════════════════════════════════════════
+
+  # ── GLUETUN ───────────────────────────────────────────────────
+  # VPN gateway — connects to ProtonVPN via OpenVPN
+  # Credentials come from ~/docker/.env (never hardcoded here)
+  # Exposes qBittorrent's WebUI on port 8090
+  # ──────────────────────────────────────────────────────────────
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    networks: [medianet]
+    cap_add:
+      - NET_ADMIN   # required — Gluetun needs to create and manage the VPN network interface
+    environment:
+      - VPN_SERVICE_PROVIDER=protonvpn
+      - OPENVPN_USER=${VPN_USER}       # loaded from ~/docker/.env — never store real credentials here
+      - OPENVPN_PASSWORD=${VPN_PASS}   # loaded from ~/docker/.env
+      - SERVER_COUNTRIES=Netherlands   # ProtonVPN P2P server country — change to any P2P-enabled country
+      - TZ=Europe/London
+    ports:
+      - "8090:8080"   # qBittorrent WebUI is exposed here (Gluetun owns the network, not qBittorrent)
+    restart: unless-stopped
+
+  # ── qBITTORRENT ───────────────────────────────────────────────
+  # Torrent client — ALL traffic routed through Gluetun VPN above
+  # Downloads land in /data/torrents/{tv,movies,anime}
+  # Sonarr and Radarr watch those folders and import finished files
+  # Access at: http://K10_IP:8090 (via Gluetun's port)
+  # ──────────────────────────────────────────────────────────────
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    network_mode: "service:gluetun"   # forces ALL traffic through Gluetun — kill switch active
+    environment:
+      - PUID=1000
+      - PGID=988
+      - TZ=Europe/London
+      - WEBUI_PORT=8080   # internal WebUI port (exposed as 8090 via Gluetun above)
+    volumes:
+      - /home/rayyanbiram/docker/qbittorrent/config:/config
+      - /mnt/nas/data:/data   # TRaSH: downloads to /data/torrents/{tv,movies,anime}
+    depends_on:
+      - gluetun   # wait for Gluetun to start before launching — won't have internet without it
+    restart: unless-stopped
+
+  # ── RECYCLARR ─────────────────────────────────────────────────
+  # TRaSH Guides automation — syncs quality profiles and custom
+  # formats from TRaSH Guides to Sonarr and Radarr automatically
+  # Runs on a schedule — no manual quality profile management needed
+  # No port — no UI, runs silently in background
+  # ──────────────────────────────────────────────────────────────
+  recyclarr:
+    image: ghcr.io/recyclarr/recyclarr:latest
+    container_name: recyclarr
+    networks: [medianet]
+    user: "1000:988"   # run as rayyanbiram (UID 1000, GID 988)
+    environment:
+      - TZ=Europe/London
+    volumes:
+      - /home/rayyanbiram/docker/recyclarr/config:/config   # recyclarr.yml lives here
+    restart: unless-stopped
+
+  # ── PORTAINER ─────────────────────────────────────────────────
+  # Docker GUI — manage containers, view logs, restart services
+  # from a web browser instead of the command line
+  # Port: 9000
+  # ──────────────────────────────────────────────────────────────
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    networks: [medianet]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock   # needs Docker socket to manage containers
+      - /home/rayyanbiram/docker/portainer/data:/data
+    ports:
+      - "9000:9000"
+    restart: unless-stopped
+
+  # ── CLOUDFLARED TUNNEL ────────────────────────────────────────
+  # Cloudflare Tunnel client — creates outbound encrypted connection
+  # to Cloudflare's network. Makes seerr.biram.uk and immich.biram.uk
+  # publicly reachable without exposing your home IP or opening
+  # any router ports. Token loaded from ~/docker/.env
+  # No port — outbound connection only
+  # ──────────────────────────────────────────────────────────────
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    networks: [medianet]
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CF_TUNNEL_TOKEN}   # loaded from ~/docker/.env — set before first launch
+    restart: unless-stopped
+
+  # ── UPTIME KUMA ───────────────────────────────────────────────
+  # Service monitoring — checks all your services are up every 60s
+  # Sends alerts if anything goes down
+  # Port: 3001
+  # ──────────────────────────────────────────────────────────────
+  uptime-kuma:
+    image: louislam/uptime-kuma:latest
+    container_name: uptime-kuma
+    networks: [medianet]
+    volumes:
+      - /home/rayyanbiram/docker/uptime-kuma/data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock   # optional: lets Kuma monitor Docker containers directly
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+
+  # ── ADGUARD HOME ──────────────────────────────────────────────
+  # Network-wide ad and tracker blocking — acts as your DNS server
+  # All devices on your network send DNS queries here first
+  # Blocks ads at the DNS level before they reach your browser
+  # Port 3000: first-run setup wizard
+  # Port 80: admin dashboard after setup
+  # Port 8053: DNS (mapped from 53 to avoid conflict with host)
+  # ──────────────────────────────────────────────────────────────
+  adguard:
+    image: adguard/adguardhome:latest
+    container_name: adguard
+    networks: [medianet]
+    volumes:
+      - /home/rayyanbiram/docker/adguard/work:/opt/adguardhome/work
+      - /home/rayyanbiram/docker/adguard/conf:/opt/adguardhome/conf
+    ports:
+      - "3000:3000"    # setup wizard — only needed on first run
+      - "8053:53/udp"  # DNS queries (UDP) — point your router's DNS here
+      - "8053:53/tcp"  # DNS queries (TCP) — for large DNS responses
+      - "80:80"        # admin dashboard after initial setup
+    restart: unless-stopped
+
+  # ── WATCHTOWER ────────────────────────────────────────────────
+  # Automatic container updates — checks for new Docker images
+  # daily at 4am and updates containers automatically
+  # Cleans up old images after updating to save disk space
+  # No port — runs silently in background
+  # ──────────────────────────────────────────────────────────────
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock   # needs Docker socket to pull and restart containers
+    environment:
+      - WATCHTOWER_SCHEDULE=0 0 4 * * *   # cron: run at 4:00am every day
+      - WATCHTOWER_CLEANUP=true           # delete old images after updating to save disk space
+      - TZ=Europe/London
+    restart: unless-stopped
+
+  # ── HOMARR DASHBOARD ──────────────────────────────────────────
+  # Home dashboard — visual overview of all your services with
+  # live status indicators and quick-launch links
+  # Port: 7575
+  # ──────────────────────────────────────────────────────────────
+  homarr:
+    image: ghcr.io/ajnart/homarr:latest
+    container_name: homarr
+    networks: [medianet]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock   # reads Docker status to show container health
+      - /home/rayyanbiram/docker/homarr/configs:/app/data/configs
+      - /home/rayyanbiram/docker/homarr/icons:/app/public/icons
+    ports:
+      - "7575:7575"
+    restart: unless-stopped
+
+  # ═══════════════════════════════════════════════════════════════
+  # IMMICH — Self-hosted Google Photos replacement
+  # Four containers work together:
+  #   immich-server        — main API and web UI
+  #   immich-machine-learning — face recognition and smart search
+  #   immich_redis         — job queue (thumbnail generation etc.)
+  #   immich_postgres      — photo metadata database
+  # Photos stored at /mnt/nas/photos → RAID 1 NAS pool
+  # ═══════════════════════════════════════════════════════════════
+
+  # ── IMMICH SERVER ─────────────────────────────────────────────
+  # Main Immich container — web UI, API, upload handling
+  # Exposed publicly at https://immich.biram.uk via Cloudflare Tunnel
+  # Port: 2283
+  # ──────────────────────────────────────────────────────────────
+  immich-server:
+    image: ghcr.io/immich-app/immich-server:release
+    container_name: immich_server
+    networks: [medianet]
+    volumes:
+      - /mnt/nas/photos:/usr/src/app/upload   # photos stored on RAID 1 NAS pool
+      - /etc/localtime:/etc/localtime:ro       # sync container time with host
+    env_file:
+      - /home/rayyanbiram/docker/immich.env   # database credentials from separate env file
+    ports:
+      - "2283:3001"
+    depends_on:
+      - immich_redis      # needs Redis for job queue before starting
+      - immich_postgres   # needs Postgres database before starting
+    restart: unless-stopped
+
+  # ── IMMICH MACHINE LEARNING ───────────────────────────────────
+  # Runs face recognition and CLIP smart search on your photos
+  # Downloads AI models to /cache on first run (~1GB)
+  # No port — called internally by immich-server
+  # ──────────────────────────────────────────────────────────────
+  immich-machine-learning:
+    image: ghcr.io/immich-app/immich-machine-learning:release
+    container_name: immich_ml
+    networks: [medianet]
+    volumes:
+      - /home/rayyanbiram/docker/immich/model-cache:/cache   # AI models cached here after first download
+    env_file:
+      - /home/rayyanbiram/docker/immich.env
+    restart: unless-stopped
+
+  # ── IMMICH REDIS ──────────────────────────────────────────────
+  # In-memory cache and job queue for Immich
+  # Handles background tasks: thumbnail generation, video transcoding,
+  # metadata extraction — no data stored permanently here
+  # No port — internal only
+  # ──────────────────────────────────────────────────────────────
+  immich_redis:
+    image: redis:6.2-alpine
+    container_name: immich_redis
+    networks: [medianet]
+    restart: unless-stopped
+
+  # ── IMMICH POSTGRES ───────────────────────────────────────────
+  # Database for Immich — stores photo metadata, albums, faces,
+  # user accounts, and search index
+  # Uses pgvecto-rs extension for AI-powered vector similarity search
+  # No port — internal only, only immich-server talks to it
+  # ──────────────────────────────────────────────────────────────
+  immich_postgres:
+    image: tensorchord/pgvecto-rs:pg14-v0.2.0
+    container_name: immich_postgres
+    networks: [medianet]
+    environment:
+      POSTGRES_PASSWORD: ${IMMICH_DB_PASSWORD}   # must match DB_PASSWORD in immich.env
+      POSTGRES_USER: immich
+      POSTGRES_DB: immich
+      POSTGRES_INITDB_ARGS: '--data-checksums'   # enables data integrity verification on the database
+    volumes:
+      - /home/rayyanbiram/docker/immich/pgdata:/var/lib/postgresql/data   # database files stored here
+    restart: unless-stopped

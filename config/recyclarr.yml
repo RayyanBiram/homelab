@@ -1,0 +1,37 @@
+sonarr:
+  sonarr-tv:
+    base_url: http://sonarr:8989
+    api_key: YOUR_SONARR_API_KEY_HERE        # from Step 23 → Settings → General → API Key
+    quality_profiles:
+      - name: WEB-1080p                    # TRaSH recommended quality profile for TV shows
+    custom_formats:
+      - trash_ids:
+          - 2b517101a61a99d084b0e2e05cee3f3e  # HDR (undefined)
+          - 7878c33f1963fefb3d6c8657d46c2f0a  # DV HDR10
+          - 1f733af03141f068a540eec352589a89  # DV HLG
+          - 27954b0a80d80268b4cf7e5b7a490291  # DV SDR
+          - 6d0d8ebdc2c1a7bd0e3c84aeea85e1f9  # Dolby Vision
+          - 3a3ff47579026e76d6504ebea39390de  # Remux-1080p
+          - 9f4b031a9cbab5996b2b6c60ad1c5ded  # WEB-DL (1080p)
+        assign_scores_to:
+          - name: WEB-1080p
+
+radarr:
+  radarr-movies:
+    base_url: http://radarr:7878
+    api_key: YOUR_RADARR_API_KEY_HERE           # from Step 24 → Settings → General → API Key
+    quality_profiles:
+      - name: Remux + WEB 2160p            # TRaSH recommended — grabs 4K where available, 1080p otherwise
+    custom_formats:
+      - trash_ids:
+          - e23edd2482476e595fb990b12e7c609c  # DV HDR10
+          - 58d6a88f13e2db7f5059c41047876f00  # DV
+          - 55a5b50cb416dea5a50c4955896217ab  # DV HLG
+          - a3e19f8f627608af0211acd02bf89735  # DV SDR
+          - e61e28db84184b22bc0b98f9d498e3e9  # HDR
+          - dfb86d5941bc9075d6af23b09c2aeecd  # HDR10
+          - e23b7d5f48d6a1d4e0b0e9f81f5c0abc  # HDR10+
+          - 3a3ff47579026e76d6504ebea39390de  # Remux-1080p
+          - 9f4b031a9cbab5996b2b6c60ad1c5ded  # WEB-DL (1080p)
+        assign_scores_to:
+          - name: Remux + WEB 2160p

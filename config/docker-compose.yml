@@ -337,7 +337,7 @@ services:
   # No port — runs silently in background
   # ──────────────────────────────────────────────────────────────
   watchtower:
-    image: containrrr/watchtower:latest
+    image: containrrr/watchtower:latest   # NOTE: currently disabled — API version incompatibility with Docker 25+
     container_name: watchtower
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock   # needs Docker socket to pull and restart containers

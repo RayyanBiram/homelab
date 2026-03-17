@@ -386,6 +386,7 @@ services:
     volumes:
       - /mnt/nas/photos:/usr/src/app/upload   # photos stored on RAID 1 NAS pool
       - /etc/localtime:/etc/localtime:ro       # sync container time with host
+      - /mnt/nas/photos/upload:/external/icloud:ro  # iCloud photos for external library
     env_file:
       - /home/rayyanbiram/docker/immich.env   # database credentials from separate env file
     ports:

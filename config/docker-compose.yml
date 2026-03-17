@@ -325,8 +325,8 @@ services:
       - /home/rayyanbiram/docker/adguard/conf:/opt/adguardhome/conf
     ports:
       - "3000:3000"    # setup wizard — only needed on first run
-      - "8053:53/udp"  # DNS queries (UDP) — point your router's DNS here
-      - "8053:53/tcp"  # DNS queries (TCP) — for large DNS responses
+      - "53:53/udp"  # DNS queries (UDP) — point your router's DNS here
+      - "53:53/tcp"  # DNS queries (TCP) — for large DNS responses
       - "80:80"        # admin dashboard after initial setup
     restart: unless-stopped
 

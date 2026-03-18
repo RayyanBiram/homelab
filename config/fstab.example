@@ -1,0 +1,13 @@
+# /etc/fstab mount entries for the K10 media server
+# These mount NAS shares and the external backup drive as local directories
+# Docker containers reference these paths in their volume mappings
+
+# ── NAS SHARES (NFS over gigabit ethernet) ──
+# _netdev = wait for network before mounting (prevents boot failures)
+192.168.1.100:/photos  /mnt/nas/photos  nfs  defaults,_netdev  0  0
+192.168.1.100:/data    /mnt/nas/data    nfs  defaults,_netdev  0  0
+
+# ── EXTERNAL BACKUP DRIVE (USB 3.0) ──
+# nofail = don't block boot if the drive is unplugged
+# Replace UUID with your drive's actual UUID (find with: sudo blkid)
+UUID=your-drive-uuid-here  /mnt/backup  ext4  defaults,nofail  0  2

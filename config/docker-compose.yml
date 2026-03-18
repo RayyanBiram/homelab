@@ -325,8 +325,8 @@ services:
       - /home/rayyanbiram/docker/adguard/conf:/opt/adguardhome/conf
     ports:
       - "3000:3000"    # setup wizard — only needed on first run
-      - "8053:53/udp"  # DNS queries (UDP) — point your router's DNS here
-      - "8053:53/tcp"  # DNS queries (TCP) — for large DNS responses
+      - "53:53/udp"  # DNS queries (UDP) — point your router's DNS here
+      - "53:53/tcp"  # DNS queries (TCP) — for large DNS responses
       - "80:80"        # admin dashboard after initial setup
     restart: unless-stopped
 
@@ -386,6 +386,7 @@ services:
     volumes:
       - /mnt/nas/photos:/usr/src/app/upload   # photos stored on RAID 1 NAS pool
       - /etc/localtime:/etc/localtime:ro       # sync container time with host
+      - /mnt/nas/photos/upload:/external/icloud:ro  # iCloud photos for external library
     env_file:
       - /home/rayyanbiram/docker/immich.env   # database credentials from separate env file
     ports:

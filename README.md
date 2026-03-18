@@ -92,6 +92,7 @@ Built as a practical demonstration of skills relevant to **IT Support, Sysadmin,
 | **RAID 1 + RAID 0** | Mirrored pool for photos, striped pool for media |
 | **Tailscale** | Zero-config VPN mesh — secure remote access to all services |
 | **Cloudflare Tunnel** | Expose services publicly without opening router ports |
+| **rsync + cron** | Automated nightly backup of photos and Docker configs to external HDD |
 
 ### Applications
 | App | Category | Port | Purpose |
@@ -112,6 +113,7 @@ Built as a practical demonstration of skills relevant to **IT Support, Sysadmin,
 | [Uptime Kuma](https://github.com/louislam/uptime-kuma) | Monitoring | 3001 | Service health monitoring with push notifications |
 | [Watchtower](https://containrrr.dev/watchtower/) | Updates | — | Automated Docker image updates (4am daily) |
 | [Homarr](https://homarr.dev/) | Dashboard | 7575 | Unified home lab dashboard |
+| [Recyclarr](https://recyclarr.dev/) | Automation | — | TRaSH quality profile sync to Sonarr/Radarr |
 
 ---
 
@@ -119,21 +121,25 @@ Built as a practical demonstration of skills relevant to **IT Support, Sysadmin,
 
 ```
 homelab/
-├── README.md                    ← You are here
-├── GITHUB-SETUP.md              ← How to create and publish this repo
-├── docs/
-│   ├── diary.md                 ← Live build log with dates and screenshots
-│   ├── hardware.md              ← Hardware specs and physical setup photos
-│   ├── os-setup.md              ← Ubuntu, static IP, SSH, XFCE, xRDP, Tailscale
-│   ├── docker-setup.md          ← Docker install, Compose, networking, log rotation
-│   ├── media-stack.md           ← Plex, Sonarr, Radarr, Bazarr, Seerr, Cloudflare Tunnel
-│   ├── photo-backup.md          ← Immich, iCloud migration, backup strategy
-│   └── nas-setup.md             ← Dual RAID pools, NFS, folder structure
+├── README.md                           ← You are here
 ├── config/
-│   ├── docker-compose.yml       ← Production Compose file (core stack)
-│   └── immich.env.example       ← Sanitised Immich environment template
+│   ├── docker-compose.yml              ← Production Compose file (23 containers)
+│   ├── recyclarr.yml                   ← TRaSH quality profiles (API keys redacted)
+│   ├── immich.env.example              ← Sanitised Immich environment template
+│   └── fstab.example                   ← NFS + backup drive mount reference
+├── scripts/
+│   └── backup.sh                       ← Nightly rsync backup script (cron, 3am)
+├── docs/
+│   ├── diary.md                        ← Live build log with dates and screenshots
+│   ├── hardware.md                     ← Hardware specs and physical setup photos
+│   ├── os-setup.md                     ← Ubuntu, static IP, SSH, XFCE, xRDP, Tailscale
+│   ├── docker-setup.md                 ← Docker install, Compose, networking, log rotation
+│   ├── media-stack.md                  ← Plex, Sonarr, Radarr, Bazarr, Seerr, Cloudflare Tunnel
+│   ├── photo-backup.md                 ← Immich, iCloud migration, iPhone backup
+│   ├── nas-setup.md                    ← Dual RAID pools, NFS, folder structure
+│   └── backup-disaster-recovery.md     ← Backup strategy, rsync script, DR procedures
 └── assets/
-    └── screenshots/             ← App screenshots and hardware photos
+    └── screenshots/                    ← App screenshots and hardware photos
 ```
 
 ---
@@ -149,7 +155,7 @@ homelab/
 - **Remote access** — Tailscale VPN mesh with subnet routing, xRDP remote desktop
 - **Automation** — Media library management, automated subtitle fetching, Docker image auto-updates, nightly rsync backup via cron
 - **Monitoring** — Uptime Kuma health checks with push notifications, Portainer container management, AdGuard DNS analytics
-- **Backup strategy** — RAID 1 (drive failure) + external HDD rsync (deletion/corruption) — two independent safety layers
+- **Backup & disaster recovery** — Three-layer protection (RAID 1 + nightly rsync + Uptime Kuma monitoring), automated backup script, documented recovery procedures for drive failure, full server rebuild, and NAS pool loss
 - **Documentation** — Architecture diagrams, build diary, reproducible config files, version-controlled with Git
 
 ---
@@ -170,6 +176,7 @@ homelab/
 | [🎬 Media Stack](docs/media-stack.md) | Plex, library management, Seerr, Cloudflare Tunnel |
 | [📸 Photo Backup](docs/photo-backup.md) | Immich, iCloud migration, backup strategy |
 | [💾 NAS Setup](docs/nas-setup.md) | Dual RAID pools, NFS, media folder structure |
+| [🛡️ Backup & Disaster Recovery](docs/backup-disaster-recovery.md) | Backup strategy, rsync script, three DR procedures |
 
 ---
 

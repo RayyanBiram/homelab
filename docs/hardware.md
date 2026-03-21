@@ -49,7 +49,7 @@
 
 > 📷 *[Raid 1 Pool](../assets/screenshots/ugos-raid1-pool.png)*
 > 
-> 📷 *[Raid 0 Pool (Awaiting HDD arrival)](../assets/screenshots/ugos-raid0-pool.png)*
+> 📷 *[Raid 0 Pool](../assets/screenshots/ugos-raid0-pool.png)*
 
 ---
 

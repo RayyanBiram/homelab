@@ -93,7 +93,7 @@ df -h | grep nas
 ls /mnt/nas/
 ```
 
-> 📷 *[Both NAS NFS Mounted On To K10 (Awaiting arrival of Pool 1 HDD)](../assets/screenshots/nfs-both-mounts.png)*
+> 📷 *[Both NAS NFS Mounted On To K10](../assets/screenshots/nfs-both-mounts.png)*
 
 ---
 

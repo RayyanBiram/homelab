@@ -161,6 +161,24 @@ Configured in dependency order so every API key and connection is available when
 > 📸 **[Uptime Kuma Dashboard](../assets/screenshots/uptime-kuma.png)**
 ---
 
+### [21/03/26] — 12TB Drives Arrive, Media Pool Online
+
+**Goal:** Add the 2× 12TB media drives and bring the media storage online.
+
+1. Created Pool 1: 2× 12TB RAID 0 — 24TB usable
+2. Created `data` shared folder on the Media pool
+3. Added NFS permission for the `data` share
+4. Mounted `/mnt/nas/data` on K10, created TRaSH media folder structure
+5. Restarted media management containers — all path errors cleared instantly
+6. Verified Plex can scan the media library paths
+
+> 📸 **[Plex Libraries](../assets/screenshots/ugos-raid0-pool.png)**
+> 
+> 📸 **[Cloudflare Tunnel](../assets/screenshots/nfs-both-mounts.png)**
+> 
+> 📸 **[Seer Portal](../assets/screenshots/stack-operational.png)**
+
+---
 ## 🔧 Problems & Fixes Log
 
 | # | Problem | Cause | Fix |

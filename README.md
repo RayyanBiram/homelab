@@ -9,7 +9,7 @@
 [![Plex](https://img.shields.io/badge/Plex-Media_Server-E5A00D?style=for-the-badge&logo=plex&logoColor=white)](https://www.plex.tv/)
 [![Immich](https://img.shields.io/badge/Immich-Photo_Backup-4250AF?style=for-the-badge&logo=immich&logoColor=white)](https://immich.app/)
 [![Cloudflare](https://img.shields.io/badge/Cloudflare-Tunnel-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://www.cloudflare.com/)
-[![Status](https://img.shields.io/badge/Status-Active_Build-4ade80?style=for-the-badge)](#-build-diary)
+[![Status](https://img.shields.io/badge/Status-Complete-4ade80?style=for-the-badge)](#-build-diary)
 
 </div>
 

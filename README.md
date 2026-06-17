@@ -2,7 +2,7 @@
 
 # 🏠 Home Lab
 
-### Self-hosted media server, NAS, photo backup & network services — built from scratch
+### Self-hosted media server, NAS, photo backup & network services - built from scratch
 
 [![Ubuntu](https://img.shields.io/badge/Ubuntu_Server-24.04_LTS-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)](https://ubuntu.com/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
@@ -19,7 +19,7 @@
 
 This repository documents the end-to-end design, build, and configuration of a personal home lab. The project covers Linux server administration, containerisation with Docker Compose, NAS configuration with dual RAID pools, NFS network storage, VPN networking, reverse proxy tunnelling via Cloudflare, and automated monitoring and backups.
 
-Built as a practical demonstration of skills relevant to **IT Support, Sysadmin, and DevOps** roles — every decision, command, and configuration is documented here.
+Built as a practical demonstration of skills relevant to **IT Support, Sysadmin, and DevOps** roles - every decision, command, and configuration is documented here.
 
 > 📓 **[Follow the live build diary →](docs/diary.md)**
 
@@ -29,10 +29,10 @@ Built as a practical demonstration of skills relevant to **IT Support, Sysadmin,
 
 | Device | Model | Specs | Role |
 |---|---|---|---|
-| **Media Server** | GMKtec K10 | Intel i9-13900HK, 16GB DDR5, 512GB NVMe | Docker host — runs all containers 24/7 |
-| **NAS** | UGREEN DXP4800 Plus | Intel N100, 8GB DDR5, 4× 3.5" bays | Network storage — dual RAID pools |
-| **Photos Pool** | 2× 4TB HDD | RAID 1 (mirror) — 4TB usable | Immich photo backup — irreplaceable data |
-| **Media Pool** | 2× 12TB HDD | RAID 0 (stripe) — 24TB usable | Media library — max speed and capacity |
+| **Media Server** | GMKtec K10 | Intel i9-13900HK, 16GB DDR5, 512GB NVMe | Docker host - runs all containers 24/7 |
+| **NAS** | UGREEN DXP4800 Plus | Intel N100, 8GB DDR5, 4× 3.5" bays | Network storage - dual RAID pools |
+| **Photos Pool** | 2× 4TB HDD | RAID 1 (mirror) - 4TB usable | Immich photo backup - irreplaceable data |
+| **Media Pool** | 2× 12TB HDD | RAID 0 (stripe) - 24TB usable | Media library - max speed and capacity |
 | **Backup** | WD Elements 5TB | USB external HDD | iCloud transfer drive, then reformatted as nightly backup |
 | **Network** | Gigabit ethernet | All devices wired | Consistent throughput for NFS transfers |
 
@@ -87,10 +87,10 @@ Built as a practical demonstration of skills relevant to **IT Support, Sysadmin,
 | **Ubuntu Server 24.04 LTS** | Host OS on the K10 |
 | **Docker + Docker Compose** | Container orchestration across a shared bridge network |
 | **XFCE + xRDP** | Lightweight remote desktop GUI (300MB RAM vs GNOME's 1.5GB) |
-| **NFS (Network File System)** | Mounting NAS shares — containers treat NAS as local storage |
+| **NFS (Network File System)** | Mounting NAS shares - containers treat NAS as local storage |
 | **UGOS Pro** | NAS operating system managing both RAID pools |
 | **RAID 1 + RAID 0** | Mirrored pool for photos, striped pool for media |
-| **Tailscale** | Zero-config VPN mesh — secure remote access to all services |
+| **Tailscale** | Zero-config VPN mesh - secure remote access to all services |
 | **Cloudflare Tunnel** | Expose services publicly without opening router ports |
 | **rsync + cron** | Automated nightly backup of photos and Docker configs to external HDD |
 
@@ -104,16 +104,16 @@ Built as a practical demonstration of skills relevant to **IT Support, Sysadmin,
 | [Bazarr](https://www.bazarr.media/) | Subtitles | 6767 | Automatic subtitle matching and downloading |
 | [Seerr](https://github.com/seerr-team/seerr) | Requests | 5055 | Media request portal for the household |
 | [Immich](https://immich.app/) | Photos | 2283 | Self-hosted photo backup with ML face/object recognition |
-| Immich ML | Photos | — | Machine learning for face and object detection |
-| Redis | Photos | — | Cache layer for Immich |
-| PostgreSQL | Photos | — | Immich metadata database |
+| Immich ML | Photos | - | Machine learning for face and object detection |
+| Redis | Photos | - | Cache layer for Immich |
+| PostgreSQL | Photos | - | Immich metadata database |
 | [Portainer](https://www.portainer.io/) | Management | 9000 | Docker container management GUI |
-| [Cloudflared](https://developers.cloudflare.com/cloudflare-one/) | Tunnel | — | Outbound tunnel to Cloudflare edge network |
+| [Cloudflared](https://developers.cloudflare.com/cloudflare-one/) | Tunnel | - | Outbound tunnel to Cloudflare edge network |
 | [AdGuard Home](https://adguard.com/adguard-home.html) | DNS | 80 | Network-wide ad blocking and local DNS rewrites |
 | [Uptime Kuma](https://github.com/louislam/uptime-kuma) | Monitoring | 3001 | Service health monitoring with push notifications |
-| [Watchtower](https://containrrr.dev/watchtower/) | Updates | — | Automated Docker image updates (4am daily) |
+| [Watchtower](https://containrrr.dev/watchtower/) | Updates | - | Automated Docker image updates (4am daily) |
 | [Homarr](https://homarr.dev/) | Dashboard | 7575 | Unified home lab dashboard |
-| [Recyclarr](https://recyclarr.dev/) | Automation | — | TRaSH quality profile sync to Sonarr/Radarr |
+| [Recyclarr](https://recyclarr.dev/) | Automation | - | TRaSH quality profile sync to Sonarr/Radarr |
 
 ---
 
@@ -146,17 +146,17 @@ homelab/
 
 ## 🚀 Key Skills Demonstrated
 
-- **Linux server administration** — Ubuntu Server 24.04, Netplan static IP, SSH, UFW firewall, systemd, cron scheduling
-- **Containerisation** — Docker Compose orchestrating multiple containers with inter-service API communication on a bridge network
-- **Storage & redundancy** — Dual RAID pools (RAID 1 for critical data, RAID 0 for performance), NFS network mounts, fstab persistence
-- **Networking** — Static IPs, NFS ACLs, Docker bridge networking, container-name DNS resolution
-- **Security** — Cloudflare Access zero-trust policies, credential isolation via `.env` files, VPN networking
-- **Reverse proxy & tunnelling** — Cloudflare Tunnel exposing services with automatic HTTPS, no port forwarding
-- **Remote access** — Tailscale VPN mesh with subnet routing, xRDP remote desktop
-- **Automation** — Media library management, automated subtitle fetching, Docker image auto-updates, nightly rsync backup via cron
-- **Monitoring** — Uptime Kuma health checks with push notifications, Portainer container management, AdGuard DNS analytics
-- **Backup & disaster recovery** — Three-layer protection (RAID 1 + nightly rsync + Uptime Kuma monitoring), automated backup script, documented recovery procedures for drive failure, full server rebuild, and NAS pool loss
-- **Documentation** — Architecture diagrams, build diary, reproducible config files, version-controlled with Git
+- **Linux server administration** - Ubuntu Server 24.04, Netplan static IP, SSH, UFW firewall, systemd, cron scheduling
+- **Containerisation** - Docker Compose orchestrating multiple containers with inter-service API communication on a bridge network
+- **Storage & redundancy** - Dual RAID pools (RAID 1 for critical data, RAID 0 for performance), NFS network mounts, fstab persistence
+- **Networking** - Static IPs, NFS ACLs, Docker bridge networking, container-name DNS resolution
+- **Security** - Cloudflare Access zero-trust policies, credential isolation via `.env` files, VPN networking
+- **Reverse proxy & tunnelling** - Cloudflare Tunnel exposing services with automatic HTTPS, no port forwarding
+- **Remote access** - Tailscale VPN mesh with subnet routing, xRDP remote desktop
+- **Automation** - Media library management, automated subtitle fetching, Docker image auto-updates, nightly rsync backup via cron
+- **Monitoring** - Uptime Kuma health checks with push notifications, Portainer container management, AdGuard DNS analytics
+- **Backup & disaster recovery** - Three-layer protection (RAID 1 + nightly rsync + Uptime Kuma monitoring), automated backup script, documented recovery procedures for drive failure, full server rebuild, and NAS pool loss
+- **Documentation** - Architecture diagrams, build diary, reproducible config files, version-controlled with Git
 
 ---
 
@@ -183,6 +183,6 @@ homelab/
 <div align="center">
 
 **Built and documented by Rayyan Biram**
-*Ongoing project — check commit history for build progression*
+*Ongoing project - check commit history for build progression*
 
 </div>

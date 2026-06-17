@@ -6,18 +6,18 @@
 
 ## Devices
 
-### GMKtec K10 — Media Server
+### GMKtec K10 - Media Server
 
 | Spec | Detail |
 |---|---|
 | **CPU** | Intel® i9-13900HK (14 cores, 20 threads, up to 5.4GHz) |
 | **RAM** | 16GB DDR5 5200MHz |
 | **Storage** | 1TB NVMe SSD (OS + Docker configs only) |
-| **GPU** | Intel® Iris® Xe Graphics (Intel Quick Sync — hardware transcoding for Plex) |
+| **GPU** | Intel® Iris® Xe Graphics (Intel Quick Sync - hardware transcoding for Plex) |
 | **Network** | 2.5GbE ethernet |
 | **OS** | Ubuntu Server 24.04 LTS |
 | **Role** | Runs all 23 Docker containers 24/7 |
-| **Power** | ~15W idle — fanless, silent operation |
+| **Power** | ~15W idle - fanless, silent operation |
 
 **Why the K10?** The i9-13900HK provides significant headroom for Plex hardware transcoding (10+ simultaneous streams via Intel Quick Sync) and Immich machine learning, while idling at only ~15W. Fanless design means zero noise.
 
@@ -25,7 +25,7 @@
 
 ---
 
-### UGREEN DXP4800 Plus — NAS
+### UGREEN DXP4800 Plus - NAS
 
 | Spec | Detail |
 |---|---|
@@ -34,18 +34,18 @@
 | **Drive Bays** | 4x 3.5"/2.5" SATA HDD/SSD bays (all 4 populated) |
 | **OS** | UGOS Pro (UGREEN's Linux-based NAS OS) |
 | **Network** | 10GbE + 2.5GbE ethernet |
-| **Role** | Primary storage — dual RAID pools serving NFS to the K10 |
+| **Role** | Primary storage - dual RAID pools serving NFS to the K10 |
 
 ---
 
-### Storage — Dual RAID Pools
+### Storage - Dual RAID Pools
 
 | Pool | Drives | RAID Level | Usable | Purpose | Risk Tolerance |
 |---|---|---|---|---|---|
-| **Photos** | 2× 4TB (Bay 3+4) | RAID 1 (mirror) | 4TB | Immich photos — **irreplaceable** | One drive can fail |
-| **Media** | 2× 12TB (Bay 1+2) | RAID 0 (stripe) | 24TB | Media library — speed + capacity priority | No redundancy |
+| **Photos** | 2× 4TB (Bay 3+4) | RAID 1 (mirror) | 4TB | Immich photos - **irreplaceable** | One drive can fail |
+| **Media** | 2× 12TB (Bay 1+2) | RAID 0 (stripe) | 24TB | Media library - speed + capacity priority | No redundancy |
 
-**Why two different RAID levels?** Photos are irreplaceable personal data — RAID 1 ensures one drive can die with zero loss. The media pool prioritises maximum capacity and read/write speed, so RAID 0 is used. Full rationale and risk analysis documented in [Backup & Disaster Recovery](backup-disaster-recovery.md).
+**Why two different RAID levels?** Photos are irreplaceable personal data - RAID 1 ensures one drive can die with zero loss. The media pool prioritises maximum capacity and read/write speed, so RAID 0 is used. Full rationale and risk analysis documented in [Backup & Disaster Recovery](backup-disaster-recovery.md).
 
 > 📷 *[Raid 1 Pool](../assets/screenshots/ugos-raid1-pool.png)*
 > 
@@ -53,7 +53,7 @@
 
 ---
 
-### Backup — WD Elements 5TB External HDD
+### Backup - WD Elements 5TB External HDD
 
 | Detail | Value |
 |---|---|
@@ -71,11 +71,11 @@ The WD Elements was first used as an iCloud transfer medium (NTFS, plugged into 
 
 ## Network Setup
 
-All devices connected via **gigabit ethernet** — wired connections provide consistent throughput for NFS file transfers.
+All devices connected via **gigabit ethernet** - wired connections provide consistent throughput for NFS file transfers.
 
 | Device | IP Address | Method |
 |---|---|---|
-| Router | 192.168.1.1 | — |
+| Router | 192.168.1.1 | - |
 | GMKtec K10 | 192.168.1.101 | Static (Netplan) |
 | DXP4800 Plus NAS | 192.168.1.100 | Static (DHCP reservation) |
 | Main PC | 192.168.1.x | DHCP |

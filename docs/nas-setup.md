@@ -1,4 +1,4 @@
-# 💾 NAS Setup — DXP4800 Plus, Dual RAID Pools, NFS
+# 💾 NAS Setup - DXP4800 Plus, Dual RAID Pools, NFS
 
 > Configuring the UGREEN DXP4800 Plus NAS with dual purpose-built RAID pools and NFS network mounts.
 
@@ -6,35 +6,35 @@
 
 ## Overview
 
-The DXP4800 Plus NAS runs UGOS Pro and hosts **all** long-term storage. The K10 mounts two NFS shares — Docker containers treat them as local storage.
+The DXP4800 Plus NAS runs UGOS Pro and hosts **all** long-term storage. The K10 mounts two NFS shares - Docker containers treat them as local storage.
 
 ---
 
-## Dual RAID Pools — Different Data, Different Strategies
+## Dual RAID Pools - Different Data, Different Strategies
 
-### Pool 2: Photos — RAID 1 (Mirror)
+### Pool 2: Photos - RAID 1 (Mirror)
 
 | Detail | Value |
 |---|---|
 | Drives | 2× 4TB HDD (Bay 3 + 4) |
-| RAID Level | RAID 1 — identical data on both drives |
+| RAID Level | RAID 1 - identical data on both drives |
 | Usable | 4TB |
 | Shared Folder | `photos` |
 | NFS Mount | `/mnt/nas/photos` |
 
-**Why RAID 1?** Photos are irreplaceable. Both drives hold identical copies — if one dies, the NAS rebuilds automatically from the survivor.
+**Why RAID 1?** Photos are irreplaceable. Both drives hold identical copies - if one dies, the NAS rebuilds automatically from the survivor.
 
-### Pool 1: Media — RAID 0 (Stripe)
+### Pool 1: Media - RAID 0 (Stripe)
 
 | Detail | Value |
 |---|---|
 | Drives | 2× 12TB HDD (Bay 1 + 2) |
-| RAID Level | RAID 0 — data split across both drives |
+| RAID Level | RAID 0 - data split across both drives |
 | Usable | 24TB |
 | Shared Folder | `data` |
 | NFS Mount | `/mnt/nas/data` |
 
-**Why RAID 0?** The media pool prioritises maximum capacity and read/write speed. RAID 0 gives full combined capacity — 24TB instead of the 12TB RAID 1 would provide.
+**Why RAID 0?** The media pool prioritises maximum capacity and read/write speed. RAID 0 gives full combined capacity - 24TB instead of the 12TB RAID 1 would provide.
 
 ```
 RAID 1 (Photos):                    RAID 0 (Media):
@@ -82,7 +82,7 @@ Control Panel → File Services → NFS → **On** → Apply
 UUID=your-drive-uuid   /mnt/backup      ext4 defaults,nofail  0  2
 ```
 
-`_netdev` tells Linux to wait for the network before mounting — prevents boot failures if the NAS takes a moment to start. `nofail` on the backup drive prevents boot failures if the USB drive is unplugged.
+`_netdev` tells Linux to wait for the network before mounting - prevents boot failures if the NAS takes a moment to start. `nofail` on the backup drive prevents boot failures if the USB drive is unplugged.
 
 A sanitised version of this fstab is available in the repo at [`config/fstab.example`](../config/fstab.example).
 
@@ -116,7 +116,7 @@ ls /mnt/nas/
     └── anime/
 ```
 
-Downloads and media share the same `/data` root to enable hardlinks — see [Media Stack](media-stack.md) for details.
+Downloads and media share the same `/data` root to enable hardlinks - see [Media Stack](media-stack.md) for details.
 
 ---
 

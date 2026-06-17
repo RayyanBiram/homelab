@@ -63,7 +63,7 @@ ssh mediaserver@192.168.1.101
 | GNOME (default) | ~1.5GB |
 | **XFCE** | ~300MB |
 
-XFCE was chosen for tasks that benefit from a visual interface — browsing the NAS web UI, taking screenshots for documentation, and occasional troubleshooting. Most configurations were done via SSH, but XFCE was another option at hand.
+XFCE was chosen for tasks that benefit from a visual interface - browsing the NAS web UI, taking screenshots for documentation, and occasional troubleshooting. Most configurations were done via SSH, but XFCE was another option at hand.
 
 ```bash
 sudo apt install -y xfce4 xfce4-goodies lightdm lightdm-gtk-greeter
@@ -73,9 +73,9 @@ sudo systemctl set-default graphical.target
 
 ---
 
-## xRDP — Remote Desktop
+## xRDP - Remote Desktop
 
-Exposes XFCE over RDP (port 3389) — connect from Windows via 'remote desktop connection' app or any standard RDP client.
+Exposes XFCE over RDP (port 3389) - connect from Windows via 'remote desktop connection' app or any standard RDP client.
 
 ```bash
 sudo apt install -y xrdp
@@ -89,9 +89,9 @@ sudo systemctl enable xrdp && sudo systemctl start xrdp
 
 ---
 
-## Tailscale — Secure Remote Access
+## Tailscale - Secure Remote Access
 
-Tailscale creates an encrypted VPN mesh between devices. With subnet routing enabled, all home services (including the NAS UI at 192.168.1.100) are reachable from anywhere — no router port forwarding required.
+Tailscale creates an encrypted VPN mesh between devices. With subnet routing enabled, all home services (including the NAS UI at 192.168.1.100) are reachable from anywhere - no router port forwarding required.
 
 ```bash
 curl -fsSL https://tailscale.com/install.sh | sh
@@ -113,7 +113,7 @@ sudo ufw allow 3389/tcp    # xRDP
 sudo ufw enable
 ```
 
-Docker container ports are managed by Docker's own networking — UFW rules are not needed for app ports on the `medianet` bridge.
+Docker container ports are managed by Docker's own networking - UFW rules are not needed for app ports on the `medianet` bridge.
 
 ---
 

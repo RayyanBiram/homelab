@@ -7,7 +7,7 @@ echo "=== Backup started: $(date) ===" >> $LOG
 # This means the backup drive never fills up with old photos
 rsync -av --delete /mnt/nas/photos/ /mnt/backup/photos/ >> $LOG 2>&1
 
-# Back up Docker configs (settings, databases — not media)
+# Back up Docker configs (settings, databases - not media)
 rsync -av --delete ~/docker/ /mnt/backup/docker-config/ \
   --exclude='plex/config/Library' \
   --exclude='immich/pgdata' >> $LOG 2>&1

@@ -1,6 +1,6 @@
 # 🎬 Media Stack
 
-> Plex, Sonarr, Radarr, Bazarr, Seerr, Prowlarr, Recyclarr — media library management and streaming.
+> Plex, Sonarr, Radarr, Bazarr, Seerr, Prowlarr, Recyclarr - media library management and streaming.
 
 ---
 
@@ -25,7 +25,7 @@ The media stack uses specialised tools to manage and serve a personal media libr
        │                   │                  │
        ▼                   ▼                  ▼
 ┌──────────────────────────────────────────────────────┐
-│           Prowlarr — Indexer Manager :9696           │
+│           Prowlarr - Indexer Manager :9696           │
 │  NZBGeek · NZBFinder · IPTorrents · 1337x            │
 │  Syncs indexers to all *arr apps automatically       │
 └──────────────────────────────────────────────────────┘
@@ -60,9 +60,9 @@ The media stack uses specialised tools to manage and serve a personal media libr
 
 ## Applications
 
-### Plex — Media Server (:32400)
+### Plex - Media Server (:32400)
 
-Indexes and streams the media library to any device — smart TVs, phones, browsers, Apple TV, Amazon firestick. Intel Quick Sync on the i9-13900HK handles hardware transcoding (10+ simultaneous streams at near-zero CPU). Requires Plex Pass for HW transcoding.
+Indexes and streams the media library to any device - smart TVs, phones, browsers, Apple TV, Amazon firestick. Intel Quick Sync on the i9-13900HK handles hardware transcoding (10+ simultaneous streams at near-zero CPU). Requires Plex Pass for HW transcoding.
 
 Libraries configured: **TV Shows** (`/data/media/tv`), **Movies** (`/data/media/movies`), **Anime** (`/data/media/anime`)
 
@@ -70,15 +70,15 @@ Libraries configured: **TV Shows** (`/data/media/tv`), **Movies** (`/data/media/
 
 ---
 
-### Sonarr — TV Library Management (:8989)
+### Sonarr - TV Library Management (:8989)
 
-Manages the TV show library — organises files, renames them to a consistent format, fetches metadata and artwork, and monitors for new content. Connected to Plex for automatic library updates.
+Manages the TV show library - organises files, renames them to a consistent format, fetches metadata and artwork, and monitors for new content. Connected to Plex for automatic library updates.
 
 Root folder: `/data/media/tv`
 
 ---
 
-### Sonarr Anime — Anime Library Management (:8990)
+### Sonarr Anime - Anime Library Management (:8990)
 
 Separate Sonarr instance with anime-specific settings: absolute episode numbering, 10-bit video preference, dual-audio support, and dedicated quality profiles. Running anime separately avoids naming and quality conflicts with Western TV shows.
 
@@ -86,7 +86,7 @@ Root folder: `/data/media/anime`
 
 ---
 
-### Radarr — Movie Library Management (:7878)
+### Radarr - Movie Library Management (:7878)
 
 Same concept as Sonarr, but for movies. Manages the movie library, organises and renames files, and monitors for quality upgrades of existing titles.
 
@@ -94,7 +94,7 @@ Root folder: `/data/media/movies`
 
 ---
 
-### Prowlarr — Indexer Manager (:9696)
+### Prowlarr - Indexer Manager (:9696)
 
 Centralised indexer management. Four indexers are configured once in Prowlarr and automatically synced to all three *arr instances (Sonarr, Radarr, Sonarr Anime):
 
@@ -109,33 +109,33 @@ Without Prowlarr, each indexer would need to be added individually to each *arr 
 
 ---
 
-### SABnzbd — Usenet Downloader (:8080)
+### SABnzbd - Usenet Downloader (:8080)
 
 Downloads files from Usenet via the Eweka provider (EU servers, SSL on port 563). Sonarr and Radarr send download requests to SABnzbd via its API. Categories (`tv`, `movies`, `anime`) ensure downloaded files end up in the correct folders.
 
 ---
 
-### qBittorrent — Torrent Client (:8090, via Gluetun VPN)
+### qBittorrent - Torrent Client (:8090, via Gluetun VPN)
 
 Handles torrent downloads. All traffic routes through the **Gluetun VPN container** (connected to ProtonVPN Plus with port forwarding), ensuring the home IP is never exposed to torrent peers. Categories match Sonarr/Radarr expectations for automatic import.
 
 ---
 
-### Recyclarr — TRaSH Quality Profile Sync
+### Recyclarr - TRaSH Quality Profile Sync
 
-Automatically syncs community-maintained quality profiles, custom formats, and scoring from TRaSH Guides into Sonarr and Radarr. Runs on a schedule — ensures optimal quality settings without manual upkeep. Configuration at `~/docker/recyclarr/recyclarr.yml` (API keys redacted in the repo copy at `config/recyclarr.yml`).
+Automatically syncs community-maintained quality profiles, custom formats, and scoring from TRaSH Guides into Sonarr and Radarr. Runs on a schedule - ensures optimal quality settings without manual upkeep. Configuration at `~/docker/recyclarr/recyclarr.yml` (API keys redacted in the repo copy at `config/recyclarr.yml`).
 
 ---
 
-### Bazarr — Subtitle Automation (:6767)
+### Bazarr - Subtitle Automation (:6767)
 
 Watches the Sonarr and Radarr libraries and automatically finds and downloads matching subtitles from providers like OpenSubtitles. Writes subtitle files directly into media folders where Plex picks them up.
 
 ---
 
-### Seerr — Request Portal (:5055)
+### Seerr - Request Portal (:5055)
 
-A polished web UI where household members can browse, search, and request movies or TV shows. Requests are forwarded to Radarr or Sonarr via API. Accessible publicly at `https://seerr.biram.uk` via Cloudflare Tunnel — users log in with their Plex account.
+A polished web UI where household members can browse, search, and request movies or TV shows. Requests are forwarded to Radarr or Sonarr via API. Accessible publicly at `https://seerr.biram.uk` via Cloudflare Tunnel - users log in with their Plex account.
 
 > 📷 *[Seerr Portal](../assets/screenshots/seerr-portal.png)*
 
@@ -190,7 +190,7 @@ All media lives on the NAS's `/data` share (RAID 0, 24TB), mounted via NFS at `/
     └── anime/
 ```
 
-Downloads and media share the same `/data` root to enable **hardlinks** — when Sonarr/Radarr "import" a completed download, the file is instantly linked (no copying) because source and destination are on the same filesystem.
+Downloads and media share the same `/data` root to enable **hardlinks** - when Sonarr/Radarr "import" a completed download, the file is instantly linked (no copying) because source and destination are on the same filesystem.
 
 ---
 

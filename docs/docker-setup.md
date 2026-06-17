@@ -8,10 +8,10 @@
 
 All services run as Docker containers rather than being installed directly on the OS:
 
-- **Isolation** — each app has its own environment with no dependency conflicts
-- **Portability** — the entire stack rebuilds on any machine from the Compose file
-- **Easy updates** — Watchtower automatically pulls new images at 4am daily
-- **Clean removal** — stopping a container and deleting its config folder removes it completely
+- **Isolation** - each app has its own environment with no dependency conflicts
+- **Portability** - the entire stack rebuilds on any machine from the Compose file
+- **Easy updates** - Watchtower automatically pulls new images at 4am daily
+- **Clean removal** - stopping a container and deleting its config folder removes it completely
 
 ---
 
@@ -48,7 +48,7 @@ newgrp docker
 └── immich/{pgdata,model-cache}/
 ```
 
-Config folders live on the K10's local SSD (fast I/O). Media and photos live on the NAS (large capacity via NFS). All config folders are backed up nightly to the external HDD via rsync — see [Backup & Disaster Recovery](backup-disaster-recovery.md).
+Config folders live on the K10's local SSD (fast I/O). Media and photos live on the NAS (large capacity via NFS). All config folders are backed up nightly to the external HDD via rsync - see [Backup & Disaster Recovery](backup-disaster-recovery.md).
 
 ---
 
@@ -62,7 +62,7 @@ networks:
     driver: bridge
 ```
 
-Containers reach each other using **container names as hostnames** — Sonarr connects to other services at `http://containername:port` without needing IP addresses.
+Containers reach each other using **container names as hostnames** - Sonarr connects to other services at `http://containername:port` without needing IP addresses.
 
 **Plex uses `network_mode: host`** for local network discovery and direct streaming performance.
 
@@ -76,7 +76,7 @@ Secrets are stored in `~/docker/.env` (excluded from Git via `.gitignore`) and r
 chmod 600 ~/docker/.env    # only owner can read
 ```
 
-The `.env` file contains VPN credentials, Cloudflare tunnel tokens, and other secrets. It is backed up nightly by rsync but **never** committed to GitHub — the `.gitignore` ensures this. Template files (`.env.example`, `immich.env.example`) are committed to show the required variable names without real values.
+The `.env` file contains VPN credentials, Cloudflare tunnel tokens, and other secrets. It is backed up nightly by rsync but **never** committed to GitHub - the `.gitignore` ensures this. Template files (`.env.example`, `immich.env.example`) are committed to show the required variable names without real values.
 
 ---
 
@@ -111,9 +111,9 @@ docker compose pull && docker compose up -d # Update all
 docker system df                            # Disk usage
 ```
 
-> 📷 *[Docker Container Status](../assets/screenshots/docker-compose-ps.png) — all containers running]*
+> 📷 *[Docker Container Status](../assets/screenshots/docker-compose-ps.png) - all containers running]*
 > 
-> 📷 *[Portainer Dashboard](../assets/screenshots/portainer-dashboard.png) — Portainer container list]*
+> 📷 *[Portainer Dashboard](../assets/screenshots/portainer-dashboard.png) - Portainer container list]*
 
 ---
 

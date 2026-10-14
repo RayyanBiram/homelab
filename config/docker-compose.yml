@@ -1,0 +1,323 @@
+version: "3.8"
+
+# ═══════════════════════════════════════════════════════════════
+# K10 HOME SERVER - DOCKER COMPOSE
+# User: rayyanbiram  PUID: 1000  PGID: 988
+# Timezone: Europe/London
+# All containers (except Plex) communicate over the 'medianet'
+# bridge network using container names as hostnames
+# (e.g. http://immich-server:2283)
+# Credentials are loaded from ~/docker/.env - never stored here
+# ═══════════════════════════════════════════════════════════════
+
+networks:
+  medianet:
+    driver: bridge   # user-defined bridge - gives containers DNS resolution by container name
+
+services:
+
+  # ── PLEX ──────────────────────────────────────────────────────
+  # Media server - streams the media library to TVs, phones and browsers
+  # Uses network_mode: host so devices on the LAN can discover it
+  # Hardware transcoding via the Intel Iris Xe GPU (/dev/dri)
+  # Port: 32400
+  # ──────────────────────────────────────────────────────────────
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    network_mode: host   # host networking required for Plex LAN discovery and direct play
+    environment:
+      - PUID=1000          # run as rayyanbiram (UID 1000)
+      - PGID=988           # run as rayyanbiram's group (GID 988)
+      - TZ=Europe/London
+      - VERSION=docker     # tells Plex to update via the Docker image
+    volumes:
+      - /home/rayyanbiram/docker/plex/config:/config   # Plex database, metadata, thumbnails
+      - /mnt/nas/data:/data                            # libraries live under /data/media
+    devices:
+      - /dev/dri:/dev/dri   # pass the GPU into the container for Intel Quick Sync hardware transcoding
+    restart: unless-stopped
+
+  # ── SONARR ────────────────────────────────────────────────────
+  # TV library manager - organises and renames files, fetches
+  # metadata and artwork, keeps the TV library consistent
+  # Root folder: /data/media/tv
+  # Port: 8989
+  # ──────────────────────────────────────────────────────────────
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    networks: [medianet]
+    environment:
+      - PUID=1000
+      - PGID=988
+      - TZ=Europe/London
+    volumes:
+      - /home/rayyanbiram/docker/sonarr/config:/config
+      - /mnt/nas/data:/data
+    ports:
+      - "8989:8989"
+    restart: unless-stopped
+
+  # ── SONARR (ANIME) ────────────────────────────────────────────
+  # Separate Sonarr instance for anime - absolute episode numbering
+  # and its own naming rules, kept apart from standard TV
+  # Root folder: /data/media/anime
+  # Port: 8990 (maps internally to 8989 - same image, separate config)
+  # ──────────────────────────────────────────────────────────────
+  sonarr-anime:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr-anime
+    networks: [medianet]
+    environment:
+      - PUID=1000
+      - PGID=988
+      - TZ=Europe/London
+    volumes:
+      - /home/rayyanbiram/docker/sonarr-anime/config:/config
+      - /mnt/nas/data:/data
+    ports:
+      - "8990:8989"   # external 8990 maps to internal 8989 (same image as Sonarr TV, different container)
+    restart: unless-stopped
+
+  # ── RADARR ────────────────────────────────────────────────────
+  # Film library manager - same concept as Sonarr, for films
+  # Root folder: /data/media/movies
+  # Port: 7878
+  # ──────────────────────────────────────────────────────────────
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    networks: [medianet]
+    environment:
+      - PUID=1000
+      - PGID=988
+      - TZ=Europe/London
+    volumes:
+      - /home/rayyanbiram/docker/radarr/config:/config
+      - /mnt/nas/data:/data
+    ports:
+      - "7878:7878"
+    restart: unless-stopped
+
+  # ── BAZARR ────────────────────────────────────────────────────
+  # Subtitle automation - reads the Sonarr and Radarr libraries
+  # over their APIs and writes matching .srt files next to each title
+  # Port: 6767
+  # ──────────────────────────────────────────────────────────────
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    networks: [medianet]
+    environment:
+      - PUID=1000
+      - PGID=988
+      - TZ=Europe/London
+    volumes:
+      - /home/rayyanbiram/docker/bazarr/config:/config
+      - /mnt/nas/data:/data   # needs access to /data/media to write subtitle files
+    ports:
+      - "6767:6767"
+    restart: unless-stopped
+
+  # ── SEERR ─────────────────────────────────────────────────────
+  # Self-service request portal for the household - users sign in
+  # with their Plex accounts. Exposed publicly at https://seerr.biram.uk
+  # via Cloudflare Tunnel
+  # Port: 5055
+  # ──────────────────────────────────────────────────────────────
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    container_name: seerr
+    networks: [medianet]
+    environment:
+      - TZ=Europe/London
+      - LOG_LEVEL=debug
+    volumes:
+      - /home/rayyanbiram/docker/seerr/config:/app/config
+    ports:
+      - "5055:5055"
+    restart: unless-stopped
+
+  # ── PORTAINER ─────────────────────────────────────────────────
+  # Docker GUI - manage containers, view logs, restart services
+  # from a browser. Reachable on the LAN and over Tailscale only.
+  # NOTE: mounting the Docker socket is root-equivalent access to the host
+  # Port: 9000
+  # ──────────────────────────────────────────────────────────────
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    networks: [medianet]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock   # Docker API access to manage containers
+      - /home/rayyanbiram/docker/portainer/data:/data
+    ports:
+      - "9000:9000"
+    restart: unless-stopped
+
+  # ── CLOUDFLARED TUNNEL ────────────────────────────────────────
+  # Cloudflare Tunnel client - creates an outbound encrypted connection
+  # to Cloudflare's network. Publishes seerr.biram.uk and immich.biram.uk
+  # without exposing the home IP or opening any router ports.
+  # Token loaded from ~/docker/.env
+  # No port - outbound connection only
+  # ──────────────────────────────────────────────────────────────
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    networks: [medianet]
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CF_TUNNEL_TOKEN}   # loaded from ~/docker/.env
+    restart: unless-stopped
+
+  # ── UPTIME KUMA ───────────────────────────────────────────────
+  # Service monitoring - HTTP checks against every service every 60s,
+  # push notifications when anything goes down
+  # Port: 3001
+  # ──────────────────────────────────────────────────────────────
+  uptime-kuma:
+    image: louislam/uptime-kuma:latest
+    container_name: uptime-kuma
+    networks: [medianet]
+    volumes:
+      - /home/rayyanbiram/docker/uptime-kuma/data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock   # optional: lets Kuma monitor container state directly
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+
+  # ── ADGUARD HOME ──────────────────────────────────────────────
+  # Network-wide ad and tracker blocking at the DNS level, plus
+  # local DNS rewrites. The router forwards household DNS here.
+  # Port 53 requires systemd-resolved's stub listener to be disabled
+  # on the host first, otherwise the port is already in use.
+  # Port 3000: first-run setup wizard
+  # Port 80: admin dashboard after setup
+  # Port 53: DNS (UDP and TCP)
+  # ──────────────────────────────────────────────────────────────
+  adguard:
+    image: adguard/adguardhome:latest
+    container_name: adguard
+    networks: [medianet]
+    volumes:
+      - /home/rayyanbiram/docker/adguard/work:/opt/adguardhome/work
+      - /home/rayyanbiram/docker/adguard/conf:/opt/adguardhome/conf
+    ports:
+      - "3000:3000"    # setup wizard - only needed on first run
+      - "53:53/udp"    # DNS queries (UDP)
+      - "53:53/tcp"    # DNS queries (TCP) - for responses too large for UDP
+      - "80:80"        # admin dashboard after initial setup
+    restart: unless-stopped
+
+  # ── WATCHTOWER ────────────────────────────────────────────────
+  # Automatic container updates at 4am daily, one hour after the
+  # 3am backup, cleaning up old images afterwards.
+  # NOTE: currently disabled - incompatible with the Docker Engine
+  # API version on this host. Updates are done manually for now:
+  # back up, docker compose pull, docker compose up -d, check monitoring.
+  # ──────────────────────────────────────────────────────────────
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock   # needs the Docker API to pull and recreate containers
+    environment:
+      - WATCHTOWER_SCHEDULE=0 0 4 * * *   # cron: 4:00am every day
+      - WATCHTOWER_CLEANUP=true           # delete old images after updating
+      - TZ=Europe/London
+    restart: unless-stopped
+
+  # ── HOMARR DASHBOARD ──────────────────────────────────────────
+  # Home dashboard - one page with every service, live status
+  # indicators and quick-launch links
+  # Port: 7575
+  # ──────────────────────────────────────────────────────────────
+  homarr:
+    image: ghcr.io/ajnart/homarr:latest
+    container_name: homarr
+    networks: [medianet]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock   # reads container status for the dashboard
+      - /home/rayyanbiram/docker/homarr/configs:/app/data/configs
+      - /home/rayyanbiram/docker/homarr/icons:/app/public/icons
+    ports:
+      - "7575:7575"
+    restart: unless-stopped
+
+  # ═══════════════════════════════════════════════════════════════
+  # IMMICH - Self-hosted photo and video backup
+  # Four containers work together:
+  #   immich-server            - web UI, API and upload handling
+  #   immich-machine-learning  - face recognition and smart search
+  #   immich_redis             - job queue (thumbnails, metadata etc.)
+  #   immich_postgres          - metadata database
+  # Photos stored at /mnt/nas/photos → RAID 1 NAS pool
+  # ═══════════════════════════════════════════════════════════════
+
+  # ── IMMICH SERVER ─────────────────────────────────────────────
+  # Exposed publicly at https://immich.biram.uk via Cloudflare Tunnel,
+  # behind a Cloudflare Access policy (email allowlist)
+  # Port: 2283
+  # ──────────────────────────────────────────────────────────────
+  immich-server:
+    image: ghcr.io/immich-app/immich-server:release
+    container_name: immich_server
+    networks: [medianet]
+    volumes:
+      - /mnt/nas/photos:/usr/src/app/upload   # photos stored on the RAID 1 NAS pool
+      - /etc/localtime:/etc/localtime:ro       # sync container time with host
+      - /mnt/nas/photos/upload:/external/icloud:ro  # migrated iCloud library, read-only external library
+    env_file:
+      - /home/rayyanbiram/docker/immich.env   # database credentials from a separate env file
+    ports:
+      - "2283:3001"
+    depends_on:
+      - immich_redis      # start order only - does not wait for readiness
+      - immich_postgres
+    restart: unless-stopped
+
+  # ── IMMICH MACHINE LEARNING ───────────────────────────────────
+  # Face recognition and CLIP smart search
+  # Downloads models to /cache on first run (~1GB)
+  # No port - called internally by immich-server
+  # ──────────────────────────────────────────────────────────────
+  immich-machine-learning:
+    image: ghcr.io/immich-app/immich-machine-learning:release
+    container_name: immich_ml
+    networks: [medianet]
+    volumes:
+      - /home/rayyanbiram/docker/immich/model-cache:/cache   # models cached on the SSD after first download
+    env_file:
+      - /home/rayyanbiram/docker/immich.env
+    restart: unless-stopped
+
+  # ── IMMICH REDIS ──────────────────────────────────────────────
+  # In-memory job queue and cache - nothing stored permanently
+  # No port - internal only
+  # ──────────────────────────────────────────────────────────────
+  immich_redis:
+    image: redis:6.2-alpine
+    container_name: immich_redis
+    networks: [medianet]
+    restart: unless-stopped
+
+  # ── IMMICH POSTGRES ───────────────────────────────────────────
+  # Metadata database - albums, faces, users and the vector index
+  # behind smart search (pgvecto-rs extension). Pinned to a specific
+  # version rather than :latest.
+  # No port - internal only, only immich-server talks to it
+  # ──────────────────────────────────────────────────────────────
+  immich_postgres:
+    image: tensorchord/pgvecto-rs:pg14-v0.2.0
+    container_name: immich_postgres
+    networks: [medianet]
+    environment:
+      POSTGRES_PASSWORD: ${IMMICH_DB_PASSWORD}   # must match DB_PASSWORD in immich.env
+      POSTGRES_USER: immich
+      POSTGRES_DB: immich
+      POSTGRES_INITDB_ARGS: '--data-checksums'   # enables data integrity checks on the database
+    volumes:
+      - /home/rayyanbiram/docker/immich/pgdata:/var/lib/postgresql/data
+    restart: unless-stopped

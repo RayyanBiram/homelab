@@ -113,7 +113,7 @@ Every decision, command, and configuration is documented here.
 | [Cloudflared](https://developers.cloudflare.com/cloudflare-one/) | Tunnel | - | Outbound tunnel to Cloudflare edge network |
 | [AdGuard Home](https://adguard.com/adguard-home.html) | DNS | 80 | Network-wide ad blocking and local DNS rewrites |
 | [Uptime Kuma](https://github.com/louislam/uptime-kuma) | Monitoring | 3001 | Service health monitoring with push notifications |
-| [Watchtower](https://containrrr.dev/watchtower/) | Updates | - | Automated Docker image updates (currently disabled, see Docker Setup) |
+| [Watchtower](https://containrrr.dev/watchtower/) | Updates | - | Automated Docker image updates |
 | [Homarr](https://homarr.dev/) | Dashboard | 7575 | Unified home lab dashboard |
 
 ---
